@@ -2,7 +2,11 @@ pragma solidity ^0.4.15;
 
 contract OffChainDebt {
     address public owner;
+    
     mapping(address => uint) public debt;
+    mapping(address => bool) public isDebtor;
+    address[] public allDebtors;
+    uint public totalDebtors;
     
     modifier onlyOwner() {
         require(msg.sender == owner);
@@ -14,12 +18,18 @@ contract OffChainDebt {
     
     function OffChainDebt() public {
         owner = msg.sender;
+        totalDebtors = 0;
     }
     
     function take(uint amount) public {
         require(debt[msg.sender] + amount >= debt[msg.sender]);
         debt[msg.sender] += amount;
         TakeDebt(msg.sender, amount);
+        if (!isDebtor[msg.sender]) {
+            allDebtors.push(msg.sender);
+            isDebtor[msg.sender] = true;
+            totalDebtors +=1;
+        }
     }
     
     function repay(address debtor, uint amount) public onlyOwner {
